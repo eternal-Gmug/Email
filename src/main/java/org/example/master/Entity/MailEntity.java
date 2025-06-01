@@ -1,36 +1,72 @@
 package org.example.master.Entity;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "mail")
 //邮件实体类
 public class MailEntity {
-
-    //邮件的ID号
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   //邮件的唯一标识
     private Long email_id;
 
+    @ManyToOne
+    @JoinColumn(name = "from_id", nullable = false)
+    @JsonBackReference("from-user-emails")
     private UserEntity from_user;
 
+    @ManyToOne
+    @JoinColumn(name = "to_id",nullable = false)
+    @JsonBackReference("to-user-emails")
     private UserEntity to_user;
 
+    @Column(name = "from_email",nullable = false)
     private String from_email;
 
+    @Column(name = "to_email", nullable = false)
     private String to_email;
 
     //邮件的标题
+    @Column(name = "subject")
     private String subject;
 
     //邮件的主体内容
+    @Column(name = "content")
     private String content;
 
     //邮件发送时间
+    @Column(name = "send_time")
     private LocalDateTime send_time;
 
     //邮件是否已读
+    @Column(name = "is_read")
     private boolean is_read;
 
+    //邮件是否有附件
+    @Column(name = "has_attachment",nullable = false)
+    private boolean hasAttachment;
+
     //邮件的归属邮箱
-    private InboxEntity folder;
+    //private InboxEntity folder;
+
+    //邮件的附件集
+    //mapped by定义了关系的拥有方（数据库中外键所在的表），cascade定义了级联操作的行为，orphanRemoval定义了“孤儿删除”的行为
+    @OneToMany(mappedBy = "mail",cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonManagedReference("mail-attachments")
+    private List<AttachmentEntity> attachments = new ArrayList<>();
+
+    //添加附件的辅助方法
+    public void addAttachment(AttachmentEntity attachment) {
+        attachment.setMail(this);
+        attachments.add(attachment);
+    }
 
     //Getters and setters
 
@@ -72,9 +108,9 @@ public class MailEntity {
     }
 
     //得到到达用户的ID和名称
-    /*public Long getToId() {
-        return to_user.getUserId();
-    }*/
+    public Long getToId() {
+        return to_user.getUserid();
+    }
 
     public String getSubject() {
         return subject;
@@ -108,6 +144,14 @@ public class MailEntity {
         this.is_read = isRead;
     }
 
+    public boolean isHasAttachment(){
+        return hasAttachment;
+    }
+
+    public void setHasAttachment(boolean hasAttachment) {
+        this.hasAttachment = hasAttachment;
+    }
+/*
     public InboxEntity getFolder() {
         return folder;
     }
@@ -115,5 +159,5 @@ public class MailEntity {
     public void setFolder(InboxEntity folder) {
         this.folder = folder;
     }
-
+*/
 }
