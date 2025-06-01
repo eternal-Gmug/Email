@@ -51,7 +51,7 @@ public class MailEntity {
 
     //邮件是否有附件
     @Column(name = "has_attachment",nullable = false)
-    private boolean hasAttachment;
+    private int hasAttachment;
 
     //邮件的归属邮箱
     //private InboxEntity folder;
@@ -144,11 +144,11 @@ public class MailEntity {
         this.is_read = isRead;
     }
 
-    public boolean isHasAttachment(){
+    public int isHasAttachment(){
         return hasAttachment;
     }
 
-    public void setHasAttachment(boolean hasAttachment) {
+    public void setHasAttachment(int hasAttachment) {
         this.hasAttachment = hasAttachment;
     }
 /*

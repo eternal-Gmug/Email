@@ -76,8 +76,8 @@ public class AttachmentController {
             File attachmentFile = filepath.toFile();
             if (attachmentFile.exists()) {
                 //生成文件名后缀，避免同名文件
-                fileName = fileHandle.generateUniqueFileName(fileName);
-                filepath = Paths.get(userAttachmentFolderPath, fileName);
+                String FileName = fileHandle.generateUniqueFileName(fileName);
+                filepath = Paths.get(userAttachmentFolderPath, FileName);
                 attachmentFile = filepath.toFile();
             }
             //将文件写入存放路径
