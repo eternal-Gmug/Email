@@ -18,19 +18,12 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    //实现用户查找方法接口
-    public Optional<UserEntity> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-    public Optional<UserEntity> findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
     //用户注册业务逻辑
     public UserEntity registerUser(String username, String email, String password){
         return null;
     }
 
+    //用户登录业务逻辑
     public UserEntity loginUser(String username, String password) {
         return null;
     }

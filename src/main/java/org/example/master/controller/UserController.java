@@ -19,7 +19,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserEntity userEntity){
         UserEntity registeredUser = userService.registerUser(userEntity.getUsername(),userEntity.getEmail(),userEntity.getPassword());
         if(registeredUser != null){
@@ -31,7 +31,7 @@ public class UserController {
         }
     }
 
-    @PostMapping
+    @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserEntity userEntity){
         logger.info("Login attempt for email: {}", userEntity.getEmail());
         UserEntity loginUser = userService.loginUser(userEntity.getUsername(), userEntity.getPassword());

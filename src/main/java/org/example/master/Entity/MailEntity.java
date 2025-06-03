@@ -144,7 +144,7 @@ public class MailEntity {
         this.is_read = isRead;
     }
 
-    public int isHasAttachment(){
+    public int getHasAttachment(){
         return hasAttachment;
     }
 

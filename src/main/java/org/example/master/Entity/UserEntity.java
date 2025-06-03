@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -39,12 +38,12 @@ public class UserEntity {
     //记录发送邮件列表
     @OneToMany(mappedBy = "from_user",cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonManagedReference("from-user-emails")
-    private List<MailEntity> sentEmails = new ArrayList<>();
+    private List<MailEntity> sentEmails;
 
     //记录接受邮件
     @OneToMany(mappedBy = "to_user",cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonManagedReference("to-user-emails")
-    private List<MailEntity> receivedEmails = new ArrayList<>();
+    private List<MailEntity> receivedEmails;
 
     //用户的附件文件夹下载路径
     @Column(name = "attachmentFolder_path")

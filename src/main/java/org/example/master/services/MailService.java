@@ -29,12 +29,12 @@ public class MailService {
         mail.setRead(false);
         //可能需要设置收件箱
         //处理附件
-        if(AttachmentService.attachmentTempFolder.isEmpty()) {
+        if(AttachmentService.attachmentTempFolder.get(fromUser.getUserid()).isEmpty()) {
             //如果没有附件，将邮件的附件个数置为0
             mail.setHasAttachment(0);
         }else{
             //如果有附件，附件个数置为现有个数
-            mail.setHasAttachment(AttachmentService.attachmentTempFolder.size());
+            mail.setHasAttachment(AttachmentService.attachmentTempFolder.get(fromUser.getUserid()).size());
         }
         //返回一个持久化的mail实体对象,注意此时还没有发送附件
         return mailRepository.save(mail);

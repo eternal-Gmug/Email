@@ -8,9 +8,9 @@ import org.example.master.services.AttachmentService;
 import org.example.master.utils.FileHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/attachments")
@@ -36,11 +35,15 @@ public class AttachmentController {
     private static final Logger logger = LoggerFactory.getLogger(AttachmentController.class);
     private final UserRepository userRepository;
     private final AttachmentRepository attachmentRepository;
-    private FileHandle fileHandle;
+    private final FileHandle fileHandle;
+    private final AttachmentService attachmentService;
 
-    public AttachmentController(UserRepository userRepository, AttachmentRepository attachmentRepository) {
+    @Autowired
+    public AttachmentController(UserRepository userRepository, AttachmentRepository attachmentRepository, FileHandle fileHandle, AttachmentService attachmentService) {
         this.userRepository = userRepository;
         this.attachmentRepository = attachmentRepository;
+        this.fileHandle = fileHandle;
+        this.attachmentService = attachmentService;
     }
 
     //处理附件上传请求（仅用于写邮件中的上传附件）
@@ -83,18 +86,19 @@ public class AttachmentController {
             //将文件写入存放路径
             file.transferTo(attachmentFile);
 
-            //为附件生成一个随机标识号作为单封邮件的附件标识号
-            String TempIdentification = UUID.randomUUID().toString();
-            AttachmentEntity attachment = new AttachmentEntity();
-            attachment.setUser(user);
-            attachment.setFilename(fileName);
-            attachment.setFilepath(filepath.toString());
-            attachment.setUploadTime(LocalDateTime.now());
+            //为附件生成一个时间戳号作为单封邮件的附件标识号
+            String TempIdentification = FileHandle.generateTimestamp();
+            AttachmentEntity attachment = attachmentService.createEntity(fileName, filepath.toString(), user);
             //设置Map结构返回一个暂时标识符和附件实体
             Map<String,AttachmentEntity> response = new LinkedHashMap<>();
             response.put(TempIdentification, attachment);
-            //将邮件中上传的文件先保存进静态附件文件夹中，以保证在发送邮件时能将附件文件夹中的附件一并发出，缺点（只允许一台客户端访问，后续优化）
-            AttachmentService.attachmentTempFolder.put(TempIdentification,attachment);
+            //将邮件中上传的文件先保存进用户静态附件文件夹中，以保证在发送邮件时能将附件文件夹中的附件一并发出，缺点（只允许一台客户端访问，后续优化）
+            //先在静态缓存附件文件夹中查看是否有用户Id
+            if(!AttachmentService.attachmentTempFolder.containsKey(userId)){
+                AttachmentService.attachmentTempFolder.put(userId,response);
+            }else{
+                AttachmentService.attachmentTempFolder.get(userId).put(TempIdentification,attachment);
+            }
             logger.info("Uploaded file: {} successfully", fileName);
             return ResponseEntity.status(200).body(response);
 
@@ -106,9 +110,10 @@ public class AttachmentController {
 
     //响应附件删除请求，这里的删除附件表示在一封邮件中删除上传的附件
     @PostMapping("delete")
-    public ResponseEntity<?> deleteAttachment(@RequestParam("virtual_id") String virtualId){
+    public ResponseEntity<?> deleteAttachment(@RequestParam("virtual_id") String virtualId,
+                                              @RequestParam("userId") Long userId){
         try {
-            AttachmentService.attachmentTempFolder.remove(virtualId);
+            AttachmentService.attachmentTempFolder.get(userId).remove(virtualId);
             return ResponseEntity.ok().build();
         }catch (Exception e){
             logger.error("Failed to delete file: {}", e.getMessage(), e);
